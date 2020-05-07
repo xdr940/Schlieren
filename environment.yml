@@ -20,3 +20,4 @@ dependencies:
   - python-markdown-math
   - moderngl
   - pystackreg
+  - opencv
