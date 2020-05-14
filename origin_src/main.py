@@ -14,7 +14,7 @@ parser.add_argument('--min_gray',default=0,help='主要是渲染到多大的灰�
 
 parser.add_argument('--show',default=True,help='是否显示')
 parser.add_argument('--save',default=True)
-parser.add_argument('--src_p',default='./pics_rot',help='图像序列文件夹')
+parser.add_argument('--src_p',default='./',help='图像序列文件夹')
 parser.add_argument('--dst_p',default='./masks')
 parser.add_argument('--dst_p2',default='./results')
 
@@ -44,7 +44,7 @@ def setting3(img,mask,num=0):
 def main(options):
 
     #read
-    path = Path(options.src_p+'/03.png')
+    path = Path(options.src_p+'/src.png')
     dst_p = Path(options.dst_p).mkdir_p()
     dst_p2 = Path(options.dst_p2).mkdir_p()
 
@@ -71,7 +71,7 @@ def main(options):
     snap = img_show.copy()
 
 
-#
+#rigid M
     rigid_M_ = img_show<options.rigid_bound
     rigid_M_ = rigid_M_.astype(np.uint8)
 
@@ -83,24 +83,28 @@ def main(options):
 
 
 
+#flow M
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
 
     width=options.width
     flow_bkg_M = 1-rigid_M#
-#
-    flow_M = ((img_s_show<width).__or__(img_n_show<width)) *flow_bkg_M
-    flow_M = flow_M.astype(np.uint8)
-    flow = flow_M*img_show
+    flow_M_ = ((img_s_show<width).__or__(img_n_show<width)) *flow_bkg_M
+    flow_M = flow_M_.astype(np.uint8)
+    #flow_M = cv2.erode(flow_M_, kernel, iterations=1)
+    #flow_M = cv2.dilate(flow_M, kernel, iterations=1)
+
 #
     bkg_M = flow_bkg_M*(1-flow_M)
     #img_show[bkg_M] = 255
     snap = setting(img,bkg_M,255)
     names = [
-    'Src Img',
+    #'Src Img',
     'Rigid Mask',
     'Rigid Mask dilation',
-    'Flow Mask',
-    'BackGround Mask',
-    'mask sum'
+    #'Flow Mask',
+    #'Flow Mask dilation',
+    #'BackGround Mask',
+    #'mask sum'
     ]
 
     #img_copy = setting(img_copy,rigid_M,0)
@@ -108,19 +112,20 @@ def main(options):
 
     #snap = cv2.applyColorMap(snap, cv2.COLORMAP_JET)
 
-    shows= [255-img_show*flow_M,
+    shows= [#255-img_show*flow_M,
             rigid_M_,
             rigid_M,
-            flow_M,
-            bkg_M,
-            np.array(rigid_M,np.uint8)+np.array(flow_M,np.uint8)+np.array(bkg_M,np.uint8)
+            #flow_M_,
+            #flow_M,
+            #bkg_M
+       #     np.array(rigid_M,np.uint8)+np.array(flow_M,np.uint8)+np.array(bkg_M,np.uint8)
         ]
    #plt masks and src img
     fig1 = plt.figure(figsize=[8, 4])
 
     i = 1
     lens = len(shows)
-    cols = 6  # lens/2
+    cols = len(names)  # lens/2
     if lens % 2 != 0:
         cols += 1
     while i <=lens:

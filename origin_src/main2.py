@@ -13,8 +13,8 @@ parser.add_argument('--max_gray',default=255,help='主要是渲染到多大的�
 parser.add_argument('--min_gray',default=0,help='主要是渲染到多大的灰度，越小层次越少，越大层次越明显，最大255')
 
 parser.add_argument('--show',default=True,help='是否显示')
-parser.add_argument('--save',default=True)
-parser.add_argument('--src_p',default='./pics_rot',help='图像序列文件夹')
+parser.add_argument('--save',default=False)
+parser.add_argument('--src_p',default='./',help='图像序列文件夹')
 parser.add_argument('--dst_p',default='./masks')
 parser.add_argument('--dst_p2',default='./results')
 
@@ -45,7 +45,7 @@ def setting3(img,mask,num):
 def main(options):
 
     #read
-    path = Path(options.src_p+'/06.png')
+    path = Path(options.src_p+'/src.png')
     dst_p = Path(options.dst_p).mkdir_p()
     dst_p2 = Path(options.dst_p2).mkdir_p()
 
@@ -74,14 +74,23 @@ def main(options):
 
 #
     rigid_M = img_show<options.rigid_bound
+    rigid_M = rigid_M.astype(np.uint8)
+
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+
+    # 先erosion 再 dilation 去除孤立点， 并将rigid 区域变大一些
+    rigid_M = cv2.erode(rigid_M, kernel, iterations=2)
+    rigid_M = cv2.dilate(rigid_M, kernel, iterations=4)
+
 
     width=options.width
-    flow_bkg_M = True^rigid_M#
+    flow_bkg_M = 1 - rigid_M#
 #
     flow_M = ((img_s_show<width).__or__(img_n_show<width)) *flow_bkg_M
+    flow_M =flow_M.astype(np.uint8)
     flow = flow_M*img_show
 #
-    bkg_M = flow_bkg_M*(True^flow_M)
+    bkg_M = flow_bkg_M*(1-flow_M)
     #img_show[bkg_M] = 255
     names = [
     'Src Img',
@@ -97,11 +106,15 @@ def main(options):
     snap = setting3(snap,np.array(rigid_M, np.uint8),[0,0,0])
     snap = setting3(snap,np.array(bkg_M, np.uint8),[0,0,128])
 
+
+    fig0 = plt.figure(figsize=[8, 4])
     plt.subplot(1,2,1)
     plt.imshow(img_show)
+    plt.title('Src Img')
     plt.subplot(1,2,2)
     plt.imshow(snap)
-    plt.show()
+    plt.title('Rendering')
+
     shows= [img_show,
             rigid_M,
             flow_M,
@@ -120,29 +133,15 @@ def main(options):
         plt.title(names[i-1])
         plt.imshow(shows[i-1])
         i+=1
+    plt.title('Masks')
 
     #plt render img, 对不同区域的一张图通过mask 进行不同渲染
-    rigid_ = masked_array(np.ones_like(rigid_M), rigid_M == False)
-    flow_ = masked_array(flow_M.__xor__(bkg_M) * snap, flow_M.__xor__(bkg_M) == False)
 
-    fig = plt.figure(figsize=[6,8])
-
-
-    ax = fig.add_subplot(1,1,1)
-    ax.imshow(rigid_, interpolation='nearest', cmap='bone')
-
-    #1 fig
-    #flow = cv2.applyColorMap((255-flow_), cv2.COLORMAP_JET)
-    #flow_p = ax.imshow(flow)
-    #2
-    flow_p = ax.imshow((255-flow_), interpolation='nearest', cmap='jet',norm=colors.Normalize(vmin=options.min_gray, vmax=options.max_gray))
-    plt.colorbar(flow_p, shrink=0.25)
-    plt.title('Rendering')
 
     #save and show
     if options.save:
-        fig1.savefig(dst_p/(path.stem+'.png'))
-        fig.savefig(dst_p2 / (path.stem + '.png'))
+        fig0.savefig(dst_p/(path.stem+'.png'))
+        fig1.savefig(dst_p2 / (path.stem + '.png'))
     if options.show:
         plt.show()
     print('ok')
