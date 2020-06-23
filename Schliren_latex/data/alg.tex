@@ -1,0 +1,29 @@
+\section{算法流程}
+根据原理, 背景处流场密度为整个流场最低, 故将其映射为最低,设为0; 流场区域则根据公式\ref{eq:jetmap}映射, 综上所述,即可得算法\ref{ag:all}:
+
+%\begin{eqnarray}
+%    \quad &I_b(p) \rightarrow 0&\\
+%    \quad &I_c = I_b + I_f&\\
+%    \quad& I^*_c = \mathcal{F}(I_c)&\\
+%    \quad&I^*_r(p) = \textbf{r} = [0,0,0]&
+%\end{eqnarray}
+
+\begin{algorithm}[h]  
+    \caption{Schlieren算法}  
+    \label{alg:Framwork}  
+    \begin{algorithmic}[1]  
+      \Require  
+      $I$
+      \Ensure  
+     $I^*$
+     \State $I_b = I\cdot M_b$
+     \State $I_r = I\cdot M_r$
+     \State $I_f = I\cdot M_f$
+     \State $\forall p \in V_b,~~I_b(p) \leftarrow 0$
+     \State $I^*_c = \mathcal{F}(I_b + I_f)$
+     \State $\forall p \in V_r,~~I^*_r(p) = \textbf{r} = [0,0,0]$
+     \State $I^* = I^*_c + I^*_r$
+    \end{algorithmic}  
+    \label{ag:all}
+  \end{algorithm}
+其中$I$为原灰度图, $I^*$为最后的渲染图(图.\ref{fig:first_show}右), $I^*_c$为映射后的区域,为RGB图;$r$为自定义的试件和管壁区域的颜色, 这里定义为黑色([0,0,0]); $I^*_r(p)$为Rigid 区域处理后的RGB图.

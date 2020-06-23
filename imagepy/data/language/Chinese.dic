@@ -1,3 +1,7 @@
+/home/roit/aws/aprojects/Aerodynamics_IMPC/pics/01.bmp:--
+/home/roit/aws/aprojects/Aerodynamics_IMPC/pics/05.bmp:--
+/home/roit/aws/aprojects/Aerodynamics_IMPC/pics/06.bmp:--
+/home/roit/aws/aprojects/Aerodynamics_IMPC/pics_rot/06.png:--
 16-bit uint:转16位
 16_Colors:--
 2D Surface:表面积
@@ -87,6 +91,7 @@ Copy:复制
 Crop:裁剪
 Cross Stick:十字绣
 Curve Adjust:曲线调整
+Custom:--
 Cut Branch:修剪分支
 Cut By ROI:用ROI修剪分支
 Cyan:--
@@ -374,6 +379,7 @@ Save With Mark:带覆盖物保存
 Scale:缩放
 Scale And Unit:比例尺和单位
 Scatter Chart:三点图表
+Schlieren:--
 Screen Capture:屏幕截取
 Sea Ice:--
 Segment:分割
